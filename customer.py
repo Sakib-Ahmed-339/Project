@@ -8,31 +8,57 @@ def display_menu(products):
         print(f"{idx}. {product.show_title()} - {product.show_price()}")
 
 
-def take_order(products):
+def save_order_to_file(order):
+    """Save the order details to 'records.txt'."""
     try:
-        choice = int(input("Enter the number of the product you want to order: "))
-        if choice < 1 or choice > len(products):
-            print("Invalid choice, please try again.")
-            return take_order(products)
+        with open("records.txt", "a") as file:
+            file.write(f"Customer Name: {order.customer_name}\n")
+            file.write(f"Product: {order.product.title}\n")
+            file.write(f"Quantity: {order.quantity}\n")
+            file.write(f"Price per unit (incl. tax): ${order.show_product_price().split(': ')[1]}\n")
+            file.write(f"Total Order Price (incl. tax): ${order.calculate_total().split(': ')[1]}\n")
+            file.write("-" * 50 + "\n")
+    except Exception as e:
+        print(f"Error saving order details to file: {e}")
+
+
+def take_order(products):
+    """Handle the order-taking process."""
+    while True:
+        try:
+            choice = int(input("Enter the number of the product you want to order: "))
+            if choice < 1 or choice > len(products):
+                print("Invalid choice, please try again.")
+            else:
+                break
         
-        selected_product = products[choice - 1]
-        customer_name = input("Enter your name: ")
-        quantity = int(input(f"How many {selected_product.title}s would you like to order? "))
+        except ValueError:
+            print("Invalid input! Please enter a valid number.")
 
-        order = Order(quantity, customer_name, selected_product)
-        print("Order Summary:")
-        print(order.show_customer_name())
-        print(order.show_quantity())
-        print(order.show_product_price())
-        print(order.calculate_total())
+    selected_product = products[choice - 1]
+    customer_name = input("Enter your name: ")
 
-    except ValueError:
-        print("Invalid input! Please enter a number.")
-        take_order(products)
+    while True:
+        try:
+            quantity = int(input(f"How many {selected_product.title}s would you like to order? "))
+            if quantity <= 0:
+                print("Quantity must be a positive integer.")
+            else:
+                break
+        except ValueError:
+            print("Invalid input! Please enter a valid number for quantity.")
+
+    order = Order(quantity, customer_name, selected_product)
+    print("Order Summary:")
+    print(order.show_customer_name())
+    print(order.show_quantity())
+    print(order.show_product_price())
+    print(order.calculate_total())
+
+    save_order_to_file(order)
 
 
 def main():
-
     product_1 = Product("Pen", 10)
     product_2 = Product("Paper", 50)
     product_3 = Product("Notebook", 100)
